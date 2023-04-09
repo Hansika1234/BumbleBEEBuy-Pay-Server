@@ -103,6 +103,61 @@ namespace BumbleBEEBuy_Pay.Controllers
         }
 
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> update1(int id, [FromBody] TblProduct product)
+        {
+            
+            if (product == null || product.ProductId != id)
+            {
+                return BadRequest();
+            }
+
+            var existingEntity = await dbContext.TblProducts.FirstOrDefaultAsync(t => t.ProductId == id);
+            if (existingEntity == null)
+            {
+                return NotFound();
+            }
+
+            existingEntity.ProductName = product.ProductName;
+            existingEntity.Category = product.Category;
+            existingEntity.ProductBrand = product.ProductBrand;
+            existingEntity.UnitPrice = product.UnitPrice;
+         
+
+            dbContext.TblProducts.Update(existingEntity);
+            dbContext.SaveChanges();
+            return new NoContentResult();
+        }
+
+
+        //[HttpPost]
+        //public async Task<IActionResult> update([FromBody] TblProduct product)
+        //{
+
+        //    if (product == null || product.ProductId != id)
+        //    {
+        //        return BadRequest();
+        //    }
+
+        //    var existingEntity = await dbContext.TblProducts.FirstOrDefaultAsync(t => t.ProductId == id);
+        //    if (existingEntity == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    existingEntity.ProductName = product.ProductName;
+        //    existingEntity.Category = product.Category;
+        //    existingEntity.ProductBrand = product.ProductBrand;
+        //    existingEntity.UnitPrice = product.UnitPrice;
+
+
+        //    dbContext.TblProducts.Update(existingEntity);
+        //    dbContext.SaveChanges();
+        //    return new NoContentResult();
+        //}
+
+
+
         //[HttpPost]
         //public IActionResult LogingCustomer(UserLogin objuserlogin)
         //{
@@ -127,6 +182,35 @@ namespace BumbleBEEBuy_Pay.Controllers
         //        return Ok(JsonConvert.SerializeObject("Wrong userName 0R Password"));
         //    }
         //}
+
+        [HttpPost]
+        public async Task<string> update([FromBody] TblProduct product)
+        {
+            try
+            {
+                string StoreProc = "exec Sp_UpdateProduct @id,@Category,@ProductName,@Productbrand,@unitprice";
+
+                var ProductID = new Microsoft.Data.SqlClient.SqlParameter("@id",product.ProductId);
+                var Category = new Microsoft.Data.SqlClient.SqlParameter("@Category",product.Category);
+                var ProductName = new Microsoft.Data.SqlClient.SqlParameter("@ProductName",product.ProductName);
+                var ProductBrand = new Microsoft.Data.SqlClient.SqlParameter("@Productbrand",product.ProductBrand);
+                var UnitPrice = new Microsoft.Data.SqlClient.SqlParameter("@unitprice",product.UnitPrice);
+
+                await dbContext.Database.ExecuteSqlRawAsync(StoreProc,
+                                                               ProductID,
+                                                               Category,
+                                                               ProductName,
+                                                               ProductBrand,
+                                                               UnitPrice
+                                                               );
+
+                return "Product updated successfully";
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
 
     }

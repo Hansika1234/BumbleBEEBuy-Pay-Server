@@ -43,10 +43,17 @@ namespace BumbleBEEBuy_Pay.Controllers
         //[Route("SaveDoctor")]
         public async Task<string> Create([FromBody] TblCustomer customer)
         {
+            //string strpass = encryptpass(TextBox3.Text);
+
             try
             {
+
+                //string strpass = encryptpass(customer.CusPassword);
+
                 string StoreProc = "exec Sp_SaveCutomerDetails @CusFName,@CusLname,@CusDOB,@CusEmail,@Cusgender,@CusNIC,@CusMobile,@CusPassword,@CusRegisterdate,@Active";
 
+                //encrypt password
+                string strpass = encryptpass(customer.CusPassword);
                 var CusFirstName = new Microsoft.Data.SqlClient.SqlParameter("@CusFName",customer.CusFirstName);
                 var CusLastName = new Microsoft.Data.SqlClient.SqlParameter("@CusLname",customer.CusLastName);
                 var CusDateofBirth = new Microsoft.Data.SqlClient.SqlParameter("@CusDOB",customer.CusDateofBirth);
@@ -54,7 +61,7 @@ namespace BumbleBEEBuy_Pay.Controllers
                 var CusGender = new Microsoft.Data.SqlClient.SqlParameter("@Cusgender",customer.CusGender);
                 var CusNic = new Microsoft.Data.SqlClient.SqlParameter("@CusNIC",customer.CusNic);
                 var CusMobileNo = new Microsoft.Data.SqlClient.SqlParameter("@CusMobile",customer.CusMobileNo);
-                var CusPassword = new Microsoft.Data.SqlClient.SqlParameter("@CusPassword",customer.CusPassword);
+                var CusPassword = new Microsoft.Data.SqlClient.SqlParameter("@CusPassword",strpass);
                 var CusRegistrationDate = new Microsoft.Data.SqlClient.SqlParameter("@CusRegisterdate",customer.CusRegistrationDate);
                 var CusIsActive = new Microsoft.Data.SqlClient.SqlParameter("@Active",customer.CusIsActive);
 
@@ -87,6 +94,26 @@ namespace BumbleBEEBuy_Pay.Controllers
             }
         }
 
+        //Encrypted
+        private string encryptpass(string? cusPassword)
+        {
+            string msg = "";
+            byte[] encode = new byte[cusPassword.Length];
+            encode = Encoding.UTF8.GetBytes(cusPassword);
+            msg = Convert.ToBase64String(encode);
+            return msg;
+        }
+
+        //public string encryptpass(string password)
+        //{
+        //    string msg = "";
+        //    byte[] encode = new byte[password.Length];
+        //    encode = Encoding.UTF8.GetBytes(password);
+        //    msg = Convert.ToBase64String(encode);
+        //    return msg;
+        //}
+
+
         //delete customer
         [HttpDelete("{id}")]
         public async Task<string> delete(int id)
@@ -111,24 +138,26 @@ namespace BumbleBEEBuy_Pay.Controllers
 
         //update Register
         [HttpPost]
-        public async Task<string> update1([FromBody] TblCustomer customer)
+        public async Task<string> update([FromBody] TblCustomer customer)
         {
             try
             {
-                string StoreProc = "exec Sp_UpdateProduct @CusFName,@CusLname,@CusDOB,@CusEmail,@Cusgender,@CusNIC,@CusMobile,@CusPassword,@CusRegisterdate,@Active";
+                string StoreProc = "exec Sp_UpdateProduct @CusID,@CusFName,@CusLname,@CusDOB,@CusEmail,@Cusgender,@CusNIC,@CusMobile,@CusPassword,@CusRegisterdate,@Active";
 
-                var CusFirstName = new Microsoft.Data.SqlClient.SqlParameter("@CusFName", customer.CusFirstName);
-                var CusLastName = new Microsoft.Data.SqlClient.SqlParameter("@CusLname", customer.CusLastName);
-                var CusDateofBirth = new Microsoft.Data.SqlClient.SqlParameter("@CusDOB", customer.CusDateofBirth);
-                var CusEmail = new Microsoft.Data.SqlClient.SqlParameter("@CusEmail", customer.CusEmail);
-                var CusGender = new Microsoft.Data.SqlClient.SqlParameter("@Cusgender", customer.CusGender);
-                var CusNic = new Microsoft.Data.SqlClient.SqlParameter("@CusNIC", customer.CusNic);
-                var CusMobileNo = new Microsoft.Data.SqlClient.SqlParameter("@CusMobile", customer.CusMobileNo);
-                var CusPassword = new Microsoft.Data.SqlClient.SqlParameter("@CusPassword", customer.CusPassword);
-                var CusRegistrationDate = new Microsoft.Data.SqlClient.SqlParameter("@CusRegisterdate", customer.CusRegistrationDate);
-                var CusIsActive = new Microsoft.Data.SqlClient.SqlParameter("@Active", customer.CusIsActive);
+                 var CusID = new Microsoft.Data.SqlClient.SqlParameter("@CusID",customer.CusId);
+                var CusFirstName = new Microsoft.Data.SqlClient.SqlParameter("@CusFName",customer.CusFirstName);
+                var CusLastName = new Microsoft.Data.SqlClient.SqlParameter("@CusLname",customer.CusLastName);
+                var CusDateofBirth = new Microsoft.Data.SqlClient.SqlParameter("@CusDOB",customer.CusDateofBirth);
+                var CusEmail = new Microsoft.Data.SqlClient.SqlParameter("@CusEmail",customer.CusEmail);
+                var CusGender = new Microsoft.Data.SqlClient.SqlParameter("@Cusgender",customer.CusGender);
+                var CusNic = new Microsoft.Data.SqlClient.SqlParameter("@CusNIC",customer.CusNic);
+                var CusMobileNo = new Microsoft.Data.SqlClient.SqlParameter("@CusMobile",customer.CusMobileNo);
+                var CusPassword = new Microsoft.Data.SqlClient.SqlParameter("@CusPassword",customer.CusPassword);
+                var CusRegistrationDate = new Microsoft.Data.SqlClient.SqlParameter("@CusRegisterdate",customer.CusRegistrationDate);
+                var CusIsActive = new Microsoft.Data.SqlClient.SqlParameter("@Active",customer.CusIsActive);
 
                 await dbContext.Database.ExecuteSqlRawAsync(StoreProc,
+                                                               CusID,
                                                                CusFirstName,
                                                                CusLastName,
                                                                CusDateofBirth,
@@ -150,7 +179,7 @@ namespace BumbleBEEBuy_Pay.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id,[FromBody] TblCustomer customer)
+        public async Task<IActionResult> Update1(int id,[FromBody] TblCustomer customer)
         {
             //// Use LINQ to retrieve the existing entity from the database based on its ID or other unique identifier
             //var existingEntity = await dbContext.TblCustomers.FindAsync(id);
@@ -195,7 +224,7 @@ namespace BumbleBEEBuy_Pay.Controllers
             return  new NoContentResult();
         }
 
-        //delete customer
+       
         [HttpGet("{id}")]
         public async Task<IActionResult> getbyID(int? id)
         {
@@ -214,15 +243,33 @@ namespace BumbleBEEBuy_Pay.Controllers
             return Ok(existingEntity);
         }
 
+        //Decrypted
+        public static string EncodePasswordToBase64(string password)
+        {
+            try
+            {
+                byte[] encData_byte = new byte[password.Length];
+                encData_byte = System.Text.Encoding.UTF8.GetBytes(password);
+                string encodedData = Convert.ToBase64String(encData_byte);
+                return encodedData;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error in base64Encode" + ex.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] TblCustomer cusnlog)
         {
             LoginResponseDTO loginRespond = new LoginResponseDTO();
+
+         string x = EncodePasswordToBase64(cusnlog.CusPassword);
             // TODO: Encrypt password
             var user = dbContext.TblCustomers
                 .Where(t =>
                     t.CusEmail == cusnlog.CusEmail &&
-                    t.CusPassword == cusnlog.CusPassword
+                    t.CusPassword == x
 
                  )
                  .FirstOrDefault();
@@ -238,5 +285,6 @@ namespace BumbleBEEBuy_Pay.Controllers
             }
            
         }
+
     }
 }

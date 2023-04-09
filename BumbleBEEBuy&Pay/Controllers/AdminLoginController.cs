@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
+using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -48,6 +49,24 @@ namespace BumbleBEEBuy_Pay.Controllers
                 loginRespond.Mesaage = "User Logged correct";
                 return Ok(loginRespond);
             }        
+        }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<TblInstallmentDetail>> get()
+        {
+            var result = from I in dbContext.TblInstallmentDetails
+                         join c in dbContext.TblCustomers on I.CusId equals c.CusId
+                         join p in dbContext.TblProducts on I.ProductId equals p.ProductId
+                         select new
+                         {
+                             CusFirstName = c.CusFirstName,
+                             ProductName = p.ProductName,
+                             LoanBalance = I.LoanBalance,
+                             InstallmentPlan = I.InstallmentPlan,
+                             UsedAmount = I.UsedAmount
+                         };
+
+            return Ok(result);
         }
     }
 
